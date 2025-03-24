@@ -1,0 +1,55 @@
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs and Debug Files
+*.log
+logs/
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# System/IDE Specific Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.swp
+
+# Data and Uploads
+uploads/
+processed/
+static/uploads/
+
+# ML & Data Science Specific
+*.csv
+*.tsv
+*.json
+*.xlsx
+*.h5
+*.pkl
+*.joblib
+*.npz
+
+# Docker-related files (if using Docker)
+.dockerignore
+docker-compose.override.yml
+
+# Terraform-related (if using infrastructure as code)
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+
+# Jenkins and CI/CD (if applicable)
+.jenkinsfile
+
