@@ -3,6 +3,9 @@ venv/
 env/
 .venv/
 
+#Dataset
+leukemia_dataset/
+
 # Compiled Python files
 __pycache__/
 *.pyc
