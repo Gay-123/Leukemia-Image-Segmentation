@@ -60,7 +60,7 @@ pipeline {
 
     stage('Update Kubernetes manifests') {
       environment {
-        GIT_REPO_NAME = "leukemia_segmentation"
+        GIT_REPO_NAME = "Leukemia-Image-Segmentation"
         GIT_USER_NAME = "Gay-123"
       }
       steps {
