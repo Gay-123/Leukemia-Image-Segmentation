@@ -1,20 +1,15 @@
 pipeline {
   agent {
     docker {
-      image 'python:3.8'  // Used for running initial steps (not for building image)
-      args '-v /var/run/docker.sock:/var/run/docker.sock'
+      image 'gayathri814/leukemia-segmentation:v1.0'  // Used for running initial steps (not for building image)
+      args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
-  }
-
-  environment {
-    DOCKER_IMAGE = "gayathri814/leukemia-segmentation"
-    GIT_REPO_NAME = "leukemia_segmentation"
-    GIT_USER_NAME = "Gay-123"
   }
 
   stages {
     stage('Checkout') {
       steps {
+        sh'echo passed'
         git branch: 'main', url: 'https://github.com/Gay-123/Leukemia-Image-Segmentation.git'
       }
     }
@@ -31,7 +26,7 @@ pipeline {
 
     stage('Static Code Analysis') {
       environment {
-        SONAR_URL = "http://your-sonarqube-host:9000"
+        SONAR_URL = "http://172.22.64.1:9000"
       }
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
