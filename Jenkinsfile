@@ -36,27 +36,34 @@ pipeline {
     }
 
      stage('Static Code Analysis') {
-      steps {
+    steps {
         script {
-          def sonarUrl = 'http://host.docker.internal:9000'
-          sh "curl -v ${sonarUrl} || echo 'Connection test failed'"
-          
-          // VERIFIED WORKING SYNTAX
-          withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
+            // First install unzip in the container
+            sh 'apt-get update && apt-get install -y unzip'
+            
+            // Then proceed with SonarQube scanner setup
             sh '''
-              if [ ! -d "sonar-scanner" ]; then
-                curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-                unzip sonar-scanner.zip
-              fi
-              ./sonar-scanner-*/bin/sonar-scanner \
-                -Dsonar.host.url=${sonarUrl} \
-                -Dsonar.login=${SONAR_TOKEN} \
-                -Dsonar.projectKey=Leukemia-Segmentation
+                if [ ! -d sonar-scanner ]; then
+                    curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+                    unzip sonar-scanner.zip
+                    rm sonar-scanner.zip
+                    mv sonar-scanner-* sonar-scanner
+                fi
             '''
-          }
+            
+            withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
+                sh '''
+                    export PATH="$PATH:$(pwd)/sonar-scanner/bin"
+                    sonar-scanner \
+                        -Dsonar.projectKey=Leukemia-Image-Segmentation \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://host.docker.internal:9000 \
+                        -Dsonar.login=$SONAR_TOKEN
+                '''
+            }
         }
-      }
     }
+}
 
     stage('Build & Push Docker Image') {
       steps {
