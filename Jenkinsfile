@@ -38,52 +38,59 @@ pipeline {
         '''
       }
     }
-
-    stage('Static Code Analysis') {
-      steps {
-        script {
-          // Install required tools including Node.js for SonarQube analysis
-          sh '''
-            apt-get update && apt-get install -y unzip nodejs npm
-          '''
-          
-          // Download and extract SonarQube Scanner with retry logic
-          sh '''
-            if [ ! -d sonar-scanner ]; then
-              retry_count=0
-              max_retries=3
-              until [ $retry_count -ge $max_retries ]; do
-                if curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip; then
-                  unzip -o sonar-scanner.zip
-                  rm sonar-scanner.zip
-                  mv sonar-scanner-* sonar-scanner
-                  break
-                else
-                  retry_count=$((retry_count+1))
-                  echo "Download failed, retrying ($retry_count/$max_retries)..."
-                  sleep 5
-                fi
-              done
+stage('Static Code Analysis') {
+  steps {
+    script {
+      // Install required tools including Node.js for SonarQube analysis
+      sh '''
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update && \
+        apt-get install -y --no-install-recommends \
+            unzip \
+            nodejs \
+            npm \
+            tzdata && \
+        ln -fs /usr/share/zoneinfo/UTC /etc/localtime && \
+        dpkg-reconfigure --frontend noninteractive tzdata
+      '''
+      
+      // Rest of your existing code...
+      // Download and extract SonarQube Scanner with retry logic
+      sh '''
+        if [ ! -d sonar-scanner ]; then
+          retry_count=0
+          max_retries=3
+          until [ $retry_count -ge $max_retries ]; do
+            if curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip; then
+              unzip -o sonar-scanner.zip
+              rm sonar-scanner.zip
+              mv sonar-scanner-* sonar-scanner
+              break
+            else
+              retry_count=$((retry_count+1))
+              echo "Download failed, retrying ($retry_count/$max_retries)..."
+              sleep 5
             fi
-          '''
+          done
+        fi
+      '''
 
-          // Run SonarQube Scanner with error handling
-          withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
-            sh '''
-              export PATH="$PATH:$(pwd)/sonar-scanner/bin"
-              sonar-scanner \
-                -Dsonar.projectKey=Leukemia-Image-Segmentation \
-                -Dsonar.sources=. \
-                -Dsonar.exclusions=**/leukemiaSegmentation.py  # Exclude problematic file
-                -Dsonar.host.url=http://host.docker.internal:9000 \
-                -Dsonar.login=$SONAR_TOKEN || \
-                echo "SonarQube analysis completed with warnings"
-            '''
-          }
-        }
+      // Run SonarQube Scanner with error handling
+      withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
+        sh '''
+          export PATH="$PATH:$(pwd)/sonar-scanner/bin"
+          sonar-scanner \
+            -Dsonar.projectKey=Leukemia-Image-Segmentation \
+            -Dsonar.sources=. \
+            -Dsonar.exclusions=**/leukemiaSegmentation.py  # Exclude problematic file
+            -Dsonar.host.url=http://host.docker.internal:9000 \
+            -Dsonar.login=$SONAR_TOKEN || \
+            echo "SonarQube analysis completed with warnings"
+        '''
       }
     }
-
+  }
+}
     stage('Build & Push Docker Image') {
       steps {
         script {
