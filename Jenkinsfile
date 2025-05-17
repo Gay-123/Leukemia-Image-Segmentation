@@ -35,22 +35,23 @@ pipeline {
       }
     }
 
-     stage('Static Code Analysis') {
+  stage('Static Code Analysis') {
     steps {
         script {
-            // First install unzip in the container
+            // Install unzip (if not already installed)
             sh 'apt-get update && apt-get install -y unzip'
-            
-            // Then proceed with SonarQube scanner setup
+
+            // Download and extract SonarQube Scanner (force overwrite)
             sh '''
                 if [ ! -d sonar-scanner ]; then
                     curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-                    unzip sonar-scanner.zip
+                    unzip -o sonar-scanner.zip  # <- "-o" flag forces overwrite
                     rm sonar-scanner.zip
                     mv sonar-scanner-* sonar-scanner
                 fi
             '''
-            
+
+            // Run SonarQube Scanner
             withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
                 sh '''
                     export PATH="$PATH:$(pwd)/sonar-scanner/bin"
@@ -64,7 +65,6 @@ pipeline {
         }
     }
 }
-
     stage('Build & Push Docker Image') {
       steps {
         script {
