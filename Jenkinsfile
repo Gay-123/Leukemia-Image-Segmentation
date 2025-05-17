@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'gayathri814/leukemia-segmentation:v1.0' // Make sure this image has Python, pip, Git, Docker CLI, etc.
+      image 'gayathri814/leukemia-segmentation:v1.0'
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
@@ -35,28 +35,25 @@ pipeline {
       }
     }
 
-stage('Static Code Analysis') {
-  steps {
-    script {
-      // Use this special DNS name that works in Docker containers
-      def sonarUrl = 'http://host.docker.internal:9000' 
-      
-      // Quick health check (no waiting loop needed)
-      sh "curl -I --connect-timeout 5 ${sonarUrl} || echo 'SonarQube check skipped'"
-      
-      // Run analysis directly
-      withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_TOKEN'])]) {  // Fixed: Added missing parenthesis
-        sh """
-          ./sonar-scanner-*/bin/sonar-scanner \
-            -Dsonar.host.url=${sonarUrl} \
-            -Dsonar.login=${SONAR_TOKEN} \
-            -Dsonar.projectKey=Leukemia-Segmentation
-        """
+    stage('Static Code Analysis') {
+      steps {
+        script {
+          def sonarUrl = 'http://host.docker.internal:9000'
+          sh "curl -I --connect-timeout 5 ${sonarUrl} || echo 'SonarQube check skipped'"
+          
+          withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_TOKEN']) {
+            sh """
+              ./sonar-scanner-*/bin/sonar-scanner \
+                -Dsonar.host.url=${sonarUrl} \
+                -Dsonar.login=${SONAR_TOKEN} \
+                -Dsonar.projectKey=Leukemia-Segmentation
+            """
+          }
+        }
       }
     }
-  }
-}
-   stage('Build & Push Docker Image') {
+
+    stage('Build & Push Docker Image') {
       steps {
         script {
           def image = docker.build("${DOCKER_IMAGE}:${IMAGE_TAG}")
@@ -74,10 +71,8 @@ stage('Static Code Analysis') {
             git config user.email "gayathrit726@gmail.com"
             git config user.name "${GIT_USER_NAME}"
 
-            # Replace tag 'final' with current build number
             sed -i "s/final/${IMAGE_TAG}/g" k8s/deployment.yml
 
-            # Commit only if there is a change
             git diff --quiet k8s/deployment.yml || {
               git add k8s/deployment.yml
               git commit -m "Update image tag to ${IMAGE_TAG} in deployment"
