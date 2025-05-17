@@ -45,7 +45,7 @@ stage('Static Code Analysis') {
       sh "curl -I --connect-timeout 5 ${sonarUrl} || echo 'SonarQube check skipped'"
       
       // Run analysis directly
-      withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_TOKEN']) {
+      withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_TOKEN'])]) {  // Fixed: Added missing parenthesis
         sh """
           ./sonar-scanner-*/bin/sonar-scanner \
             -Dsonar.host.url=${sonarUrl} \
