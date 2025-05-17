@@ -37,23 +37,32 @@ pipeline {
 
 stage('Static Code Analysis') {
   steps {
-    withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_TOKEN')]) {
+    script {
+      // Wait for SonarQube to be ready
       sh '''
-        # Install required tools
-        apt-get update && apt-get install -y unzip file curl
-        
-        # Download and setup SonarScanner
-        curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-        unzip -o sonar-scanner.zip
-        SONAR_SCANNER_DIR=$(find . -maxdepth 1 -type d -name 'sonar-scanner-*' | head -n 1)
-        
-        # Run analysis (update the host URL as needed)
-        ${SONAR_SCANNER_DIR}/bin/sonar-scanner \
-          -Dsonar.projectKey=Leukemia-Segmentation \
-          -Dsonar.sources=. \
-          -Dsonar.host.url=http://sonarqube:9000 \  # or your actual SonarQube URL
-          -Dsonar.login=${SONAR_TOKEN}
+        while ! curl -s http://localhost:9000 >/dev/null; do
+          echo "Waiting for SonarQube to start..."
+          sleep 10
+        done
       '''
+      
+      withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_TOKEN')]) {
+        sh '''
+          # Install tools
+          apt-get update && apt-get install -y unzip curl
+          
+          # Download scanner
+          curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip -o sonar-scanner.zip
+          
+          # Run analysis
+          ./sonar-scanner-*/bin/sonar-scanner \
+            -Dsonar.projectKey=Leukemia-Segmentation \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.login=${SONAR_TOKEN}
+        '''
+      }
     }
   }
 }
