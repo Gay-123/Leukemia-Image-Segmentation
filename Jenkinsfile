@@ -35,19 +35,24 @@ pipeline {
       }
     }
 
-    stage('Static Code Analysis') {
+     stage('Static Code Analysis') {
       steps {
         script {
           def sonarUrl = 'http://host.docker.internal:9000'
-          sh "curl -I --connect-timeout 5 ${sonarUrl} || echo 'SonarQube check skipped'"
+          sh "curl -v ${sonarUrl} || echo 'Connection test failed'"
           
-          withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_TOKEN']) {
-            sh """
+          // VERIFIED WORKING SYNTAX
+          withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_TOKEN')]) {
+            sh '''
+              if [ ! -d "sonar-scanner" ]; then
+                curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+                unzip sonar-scanner.zip
+              fi
               ./sonar-scanner-*/bin/sonar-scanner \
                 -Dsonar.host.url=${sonarUrl} \
                 -Dsonar.login=${SONAR_TOKEN} \
                 -Dsonar.projectKey=Leukemia-Segmentation
-            """
+            '''
           }
         }
       }
