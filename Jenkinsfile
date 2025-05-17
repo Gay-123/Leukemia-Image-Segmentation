@@ -35,23 +35,25 @@ pipeline {
       }
     }
 
-    stage('Static Code Analysis') {
-      steps {
-        withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-          sh '''
-            curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-4.8.0.2856-linux.zip
-            unzip sonar-scanner.zip
-            export PATH=$PATH:$PWD/sonar-scanner-*/bin
-            sonar-scanner \
-              -Dsonar.projectKey=Leukemia-Segmentation \
-              -Dsonar.sources=. \
-              -Dsonar.host.url=${SONAR_URL} \
-              -Dsonar.login=${SONAR_AUTH_TOKEN}
-          '''
-        }
-      }
+   stage('Static Code Analysis') {
+  steps {
+    withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+      sh '''
+        # Install unzip first
+        apt-get update && apt-get install -y unzip || apk add --no-cache unzip || yum install -y unzip
+        
+        curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-4.8.0.2856-linux.zip
+        unzip sonar-scanner.zip
+        export PATH=$PATH:$PWD/sonar-scanner-*/bin
+        sonar-scanner \
+          -Dsonar.projectKey=Leukemia-Segmentation \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=${SONAR_URL} \
+          -Dsonar.login=${SONAR_AUTH_TOKEN}
+      '''
     }
-
+  }
+}
     stage('Build & Push Docker Image') {
       steps {
         script {
