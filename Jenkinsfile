@@ -54,7 +54,6 @@ stage('Static Code Analysis') {
         dpkg-reconfigure --frontend noninteractive tzdata
       '''
       
-      // Rest of your existing code...
       // Download and extract SonarQube Scanner with retry logic
       sh '''
         if [ ! -d sonar-scanner ]; then
@@ -77,16 +76,16 @@ stage('Static Code Analysis') {
 
       // Run SonarQube Scanner with error handling
       withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
-        sh """
+        sh '''
           export PATH="$PATH:$(pwd)/sonar-scanner/bin"
           sonar-scanner \
             -Dsonar.projectKey=Leukemia-Image-Segmentation \
             -Dsonar.sources=. \
             -Dsonar.exclusions=**/leukemiaSegmentation.py \
-            -Dsonar.host.url=${SONAR_URL} \
+            -Dsonar.host.url=''' + SONAR_URL + ''' \
             -Dsonar.login=$SONAR_TOKEN || \
             echo "SonarQube analysis completed with warnings"
-        """
+        '''
       }
     }
   }
