@@ -45,7 +45,7 @@ stage('Static Code Analysis') {
         # Download SonarQube Scanner (verified URL)
         curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
 
-        # Basic file check (since 'file' command may not be available)
+        # Basic file check
         if [ -f sonar-scanner.zip ]; then
           echo "SonarQube Scanner downloaded successfully."
           ls -lh sonar-scanner.zip
@@ -54,10 +54,18 @@ stage('Static Code Analysis') {
           exit 1
         fi
 
-        # Unzip and run SonarQube Scanner
+        # Unzip and set PATH correctly
         unzip sonar-scanner.zip || { echo "Unzip failed"; exit 1; }
-        export PATH=$PATH:$PWD/sonar-scanner-*/bin
-        sonar-scanner \
+        
+        # Find the extracted sonar-scanner directory (handles version changes)
+        SONAR_SCANNER_DIR=$(find . -maxdepth 1 -type d -name "sonar-scanner-*" | head -n 1)
+        if [ -z "$SONAR_SCANNER_DIR" ]; then
+          echo "Error: Failed to find extracted sonar-scanner directory"
+          exit 1
+        fi
+
+        # Use full path to sonar-scanner executable
+        ${SONAR_SCANNER_DIR}/bin/sonar-scanner \
           -Dsonar.projectKey=Leukemia-Segmentation \
           -Dsonar.sources=. \
           -Dsonar.host.url=${SONAR_URL} \
