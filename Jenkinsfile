@@ -1,37 +1,47 @@
 pipeline {
   agent {
     docker {
-      image 'gayathri814/leukemia-segmentation:v1.0'  // Used for running initial steps (not for building image)
+      image 'gayathri814/leukemia-segmentation:v1.0' // Make sure this image has Python, pip, Git, Docker CLI, etc.
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
+  }
+
+  environment {
+    DOCKER_IMAGE = "gayathri814/leukemia-segmentation"
+    IMAGE_TAG = "${BUILD_NUMBER}"
+    SONAR_URL = "http://localhost:9000"
+    GIT_REPO_NAME = "Leukemia-Image-Segmentation"
+    GIT_USER_NAME = "Gay-123"
   }
 
   stages {
     stage('Checkout') {
       steps {
-        sh 'echo passed'
         git branch: 'main', url: 'https://github.com/Gay-123/Leukemia-Image-Segmentation.git'
       }
     }
 
-    stage('Build & Test') {
+    stage('Install Dependencies & Test') {
       steps {
         sh '''
-          pip install --upgrade pip
+          python3 -m pip install --upgrade pip
           pip install -r requirements.txt
-          pytest tests/ || echo "No tests yet"
+          if [ -d "tests" ]; then
+            pytest tests/
+          else
+            echo "No tests found"
+          fi
         '''
       }
     }
 
     stage('Static Code Analysis') {
-      environment {
-        SONAR_URL = "http://localhost:9000"  // Change the URL to your local SonarQube instance
-      }
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
           sh '''
-            pip install sonar-scanner-cli
+            curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-4.8.0.2856-linux.zip
+            unzip sonar-scanner.zip
+            export PATH=$PATH:$PWD/sonar-scanner-*/bin
             sonar-scanner \
               -Dsonar.projectKey=Leukemia-Segmentation \
               -Dsonar.sources=. \
@@ -43,16 +53,9 @@ pipeline {
     }
 
     stage('Build & Push Docker Image') {
-      environment {
-        IMAGE_TAG = "${BUILD_NUMBER}"  // The build number is passed as the image tag
-        DOCKER_IMAGE = "gayathri814/leukemia-segmentation"  // Specify the Docker image name
-      }
       steps {
         script {
-          // Build image from Dockerfile
           def image = docker.build("${DOCKER_IMAGE}:${IMAGE_TAG}")
-          
-          // Push to Docker Hub using credentials 'docker-cred'
           docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
             image.push()
           }
@@ -60,26 +63,34 @@ pipeline {
       }
     }
 
-    stage('Update Kubernetes manifests') {
-      environment {
-        GIT_REPO_NAME = "Leukemia-Image-Segmentation"  // Name of your GitHub repository
-        GIT_USER_NAME = "Gay-123"  // Your GitHub username
-      }
+    stage('Update Kubernetes Manifests and Push') {
       steps {
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
           sh '''
             git config user.email "gayathrit726@gmail.com"
-            git config user.name "Gay-123"
-            
-            # Update the Kubernetes deployment file with the build number
-            sed -i "s/final/${BUILD_NUMBER}/g" k8s/deployment.yml
+            git config user.name "${GIT_USER_NAME}"
 
-            git add k8s/deployment.yml
-            git commit -m "Update image tag to ${BUILD_NUMBER} in deployment"
-            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
+            # Replace tag 'final' with current build number
+            sed -i "s/final/${IMAGE_TAG}/g" k8s/deployment.yml
+
+            # Commit only if there is a change
+            git diff --quiet k8s/deployment.yml || {
+              git add k8s/deployment.yml
+              git commit -m "Update image tag to ${IMAGE_TAG} in deployment"
+              git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
+            }
           '''
         }
       }
+    }
+  }
+
+  post {
+    success {
+      echo '✅ Pipeline completed successfully.'
+    }
+    failure {
+      echo '❌ Pipeline failed. Check the logs above.'
     }
   }
 }
