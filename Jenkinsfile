@@ -38,30 +38,20 @@ pipeline {
 stage('Static Code Analysis') {
   steps {
     script {
-      // Wait for SonarQube to be ready
-      sh '''
-        while ! curl -s http://localhost:9000 >/dev/null; do
-          echo "Waiting for SonarQube to start..."
-          sleep 10
-        done
-      '''
+      // Use this special DNS name that works in Docker containers
+      def sonarUrl = 'http://host.docker.internal:9000' 
       
-      withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_TOKEN')]) {
-        sh '''
-          # Install tools
-          apt-get update && apt-get install -y unzip curl
-          
-          # Download scanner
-          curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-          unzip -o sonar-scanner.zip
-          
-          # Run analysis
+      // Quick health check (no waiting loop needed)
+      sh "curl -I --connect-timeout 5 ${sonarUrl} || echo 'SonarQube check skipped'"
+      
+      // Run analysis directly
+      withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_TOKEN']) {
+        sh """
           ./sonar-scanner-*/bin/sonar-scanner \
-            -Dsonar.projectKey=Leukemia-Segmentation \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=http://localhost:9000 \
-            -Dsonar.login=${SONAR_TOKEN}
-        '''
+            -Dsonar.host.url=${sonarUrl} \
+            -Dsonar.login=${SONAR_TOKEN} \
+            -Dsonar.projectKey=Leukemia-Segmentation
+        """
       }
     }
   }
