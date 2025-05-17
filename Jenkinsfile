@@ -12,7 +12,7 @@ pipeline {
     SONAR_URL = "http://host.docker.internal:9000"
     GIT_REPO_NAME = "Leukemia-Image-Segmentation"
     GIT_USER_NAME = "Gay-123"
-    DOCKER_BUILDKIT = "1"  // Enable Docker BuildKit
+    DOCKER_BUILDKIT = "0"  // Enable Docker BuildKit
     PIP_TIMEOUT = "1000"   // Increased pip timeout
   }
 
