@@ -9,7 +9,7 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        sh'echo passed'
+        sh 'echo passed'
         git branch: 'main', url: 'https://github.com/Gay-123/Leukemia-Image-Segmentation.git'
       }
     }
@@ -26,14 +26,14 @@ pipeline {
 
     stage('Static Code Analysis') {
       environment {
-        SONAR_URL = "http://172.22.64.1:9000"
+        SONAR_URL = "http://localhost:9000"  // Change the URL to your local SonarQube instance
       }
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
           sh '''
             pip install sonar-scanner-cli
             sonar-scanner \
-              -Dsonar.projectKey=leukemia_segmentation \
+              -Dsonar.projectKey=Leukemia-Segmentation \
               -Dsonar.sources=. \
               -Dsonar.host.url=${SONAR_URL} \
               -Dsonar.login=${SONAR_AUTH_TOKEN}
@@ -44,14 +44,15 @@ pipeline {
 
     stage('Build & Push Docker Image') {
       environment {
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        IMAGE_TAG = "${BUILD_NUMBER}"  // The build number is passed as the image tag
+        DOCKER_IMAGE = "gayathri814/leukemia-segmentation"  // Specify the Docker image name
       }
       steps {
         script {
           // Build image from Dockerfile
           def image = docker.build("${DOCKER_IMAGE}:${IMAGE_TAG}")
           
-          // Push to Docker Hub
+          // Push to Docker Hub using credentials 'docker-cred'
           docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
             image.push()
           }
@@ -60,12 +61,17 @@ pipeline {
     }
 
     stage('Update Kubernetes manifests') {
+      environment {
+        GIT_REPO_NAME = "Leukemia-Image-Segmentation"  // Name of your GitHub repository
+        GIT_USER_NAME = "Gay-123"  // Your GitHub username
+      }
       steps {
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
           sh '''
             git config user.email "gayathrit726@gmail.com"
             git config user.name "Gay-123"
-
+            
+            # Update the Kubernetes deployment file with the build number
             sed -i "s/final/${BUILD_NUMBER}/g" k8s/deployment.yml
 
             git add k8s/deployment.yml
