@@ -57,7 +57,7 @@ stage('Static Code Analysis') {
     }
   }
 }
-    stage('Build & Push Docker Image') {
+   stage('Build & Push Docker Image') {
       steps {
         script {
           def image = docker.build("${DOCKER_IMAGE}:${IMAGE_TAG}")
