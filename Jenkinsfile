@@ -54,17 +54,17 @@ stage('Static Code Analysis') {
           exit 1
         fi
 
-        # Unzip and set PATH correctly
-        unzip sonar-scanner.zip || { echo "Unzip failed"; exit 1; }
-        
-        # Find the extracted sonar-scanner directory (handles version changes)
+        # Force overwrite existing files during unzip
+        unzip -o sonar-scanner.zip || { echo "Unzip failed"; exit 1; }
+
+        # Find the extracted sonar-scanner directory
         SONAR_SCANNER_DIR=$(find . -maxdepth 1 -type d -name "sonar-scanner-*" | head -n 1)
         if [ -z "$SONAR_SCANNER_DIR" ]; then
           echo "Error: Failed to find extracted sonar-scanner directory"
           exit 1
         fi
 
-        # Use full path to sonar-scanner executable
+        # Run sonar-scanner with full path
         ${SONAR_SCANNER_DIR}/bin/sonar-scanner \
           -Dsonar.projectKey=Leukemia-Segmentation \
           -Dsonar.sources=. \
