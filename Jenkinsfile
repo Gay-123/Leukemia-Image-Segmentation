@@ -37,39 +37,22 @@ pipeline {
 
 stage('Static Code Analysis') {
   steps {
-    withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+    withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_TOKEN')]) {
       sh '''
-        # Install missing dependencies (unzip + file)
-        apt-get update && apt-get install -y unzip file || echo "Warning: apt-get failed (non-fatal)"
-
-        # Download SonarQube Scanner (verified URL)
+        # Install required tools
+        apt-get update && apt-get install -y unzip file curl
+        
+        # Download and setup SonarScanner
         curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-
-        # Basic file check
-        if [ -f sonar-scanner.zip ]; then
-          echo "SonarQube Scanner downloaded successfully."
-          ls -lh sonar-scanner.zip
-        else
-          echo "Error: Failed to download sonar-scanner.zip"
-          exit 1
-        fi
-
-        # Force overwrite existing files during unzip
-        unzip -o sonar-scanner.zip || { echo "Unzip failed"; exit 1; }
-
-        # Find the extracted sonar-scanner directory
-        SONAR_SCANNER_DIR=$(find . -maxdepth 1 -type d -name "sonar-scanner-*" | head -n 1)
-        if [ -z "$SONAR_SCANNER_DIR" ]; then
-          echo "Error: Failed to find extracted sonar-scanner directory"
-          exit 1
-        fi
-
-        # Run sonar-scanner with full path
+        unzip -o sonar-scanner.zip
+        SONAR_SCANNER_DIR=$(find . -maxdepth 1 -type d -name 'sonar-scanner-*' | head -n 1)
+        
+        # Run analysis (update the host URL as needed)
         ${SONAR_SCANNER_DIR}/bin/sonar-scanner \
           -Dsonar.projectKey=Leukemia-Segmentation \
           -Dsonar.sources=. \
-          -Dsonar.host.url=${SONAR_URL} \
-          -Dsonar.login=${SONAR_AUTH_TOKEN}
+          -Dsonar.host.url=http://sonarqube:9000 \  # or your actual SonarQube URL
+          -Dsonar.login=${SONAR_TOKEN}
       '''
     }
   }
