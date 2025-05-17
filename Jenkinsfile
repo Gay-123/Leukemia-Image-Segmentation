@@ -42,7 +42,7 @@ pipeline {
           sh "curl -v ${sonarUrl} || echo 'Connection test failed'"
           
           // VERIFIED WORKING SYNTAX
-          withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_TOKEN')]) {
+          withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
             sh '''
               if [ ! -d "sonar-scanner" ]; then
                 curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
