@@ -35,16 +35,25 @@ pipeline {
       }
     }
 
-   stage('Static Code Analysis') {
+ stage('Static Code Analysis') {
   steps {
     withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
       sh '''
-        # Install unzip first
-        apt-get update && apt-get install -y unzip || apk add --no-cache unzip || yum install -y unzip
-        
-        curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-4.8.0.2856-linux.zip
+        # Install unzip if not present
+        apt-get update && apt-get install -y unzip
+
+        # Download the correct SonarQube Scanner
+        curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+
+        # Verify the downloaded file (debugging)
+        file sonar-scanner.zip
+        ls -lh sonar-scanner.zip
+
+        # Unzip and set PATH
         unzip sonar-scanner.zip
         export PATH=$PATH:$PWD/sonar-scanner-*/bin
+
+        # Run SonarQube Scanner
         sonar-scanner \
           -Dsonar.projectKey=Leukemia-Segmentation \
           -Dsonar.sources=. \
