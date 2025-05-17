@@ -9,7 +9,7 @@ pipeline {
   environment {
     DOCKER_IMAGE = "gayathri814/leukemia-segmentation"
     IMAGE_TAG = "${BUILD_NUMBER}"
-    SONAR_URL = "http://localhost:9000"
+    SONAR_URL = "http://host.docker.internal:9000"
     GIT_REPO_NAME = "Leukemia-Image-Segmentation"
     GIT_USER_NAME = "Gay-123"
     DOCKER_BUILDKIT = "1"  // Enable Docker BuildKit
@@ -77,16 +77,16 @@ stage('Static Code Analysis') {
 
       // Run SonarQube Scanner with error handling
       withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
-        sh '''
+        sh """
           export PATH="$PATH:$(pwd)/sonar-scanner/bin"
           sonar-scanner \
             -Dsonar.projectKey=Leukemia-Image-Segmentation \
             -Dsonar.sources=. \
-            -Dsonar.exclusions=**/leukemiaSegmentation.py  # Exclude problematic file
-            -Dsonar.host.url=http://host.docker.internal:9000 \
+            -Dsonar.exclusions=**/leukemiaSegmentation.py \
+            -Dsonar.host.url=${SONAR_URL} \
             -Dsonar.login=$SONAR_TOKEN || \
             echo "SonarQube analysis completed with warnings"
-        '''
+        """
       }
     }
   }
