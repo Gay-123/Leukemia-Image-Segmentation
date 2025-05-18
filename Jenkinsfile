@@ -93,42 +93,14 @@ stage('Static Code Analysis') {
 stage('Build & Push Docker Image') {
   steps {
     script {
-      // Add retry logic with improved build command
-      def maxRetries = 3
-      def retryCount = 0
-      def buildSuccess = false
+      sh """
+        docker build \
+          --build-arg SKIP_PYTORCH=1 \
+          -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
+      """
       
-      while (!buildSuccess && retryCount < maxRetries) {
-        try {
-          // Use this build command instead
-          sh """
-            docker build \
-              --build-arg PIP_DEFAULT_TIMEOUT=1000 \
-              --network=host \  # Improves download reliability
-              --no-cache \  # Avoids caching issues
-              -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
-          """
-          
-          buildSuccess = true
-        } catch (Exception e) {
-          retryCount++
-          echo "Build failed (attempt $retryCount/$maxRetries), waiting 30 seconds..."
-          sleep(time: 30, unit: 'SECONDS')
-          
-          // Clean up any partial containers/images
-          sh 'docker system prune -f || true'
-          
-          if (retryCount >= maxRetries) {
-            error("Docker build failed after $maxRetries attempts")
-          }
-        }
-      }
-      
-      // Push only if build succeeded
-      if (buildSuccess) {
-        docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
-          docker.image("${DOCKER_IMAGE}:${IMAGE_TAG}").push()
-        }
+      docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
+        docker.image("${DOCKER_IMAGE}:${IMAGE_TAG}").push()
       }
     }
   }
