@@ -97,6 +97,7 @@ stage('Build & Push Docker Image') {
         sh """
           docker build \
             --no-cache \               // Ignore cached layers
+            --network=host \          
             --build-arg SKIP_PYTORCH=1 \
             -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
         """
