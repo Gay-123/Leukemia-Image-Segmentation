@@ -93,15 +93,22 @@ stage('Static Code Analysis') {
 stage('Build & Push Docker Image') {
   steps {
     script {
-      sh """
-        docker build \
-          --build-arg SKIP_PYTORCH=1 \
-          -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
-      """
-      
+      retry(3) { // Will retry up to 3 times if build fails
+        sh """
+          docker build \
+            --no-cache \               // Ignore cached layers
+            --build-arg SKIP_PYTORCH=1 \
+            -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
+        """
+      }
+
+      // Push with credentials
       docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
         docker.image("${DOCKER_IMAGE}:${IMAGE_TAG}").push()
       }
+
+      // Clean up local image after push (optional)
+      sh "docker rmi ${DOCKER_IMAGE}:${IMAGE_TAG}"
     }
   }
 }
