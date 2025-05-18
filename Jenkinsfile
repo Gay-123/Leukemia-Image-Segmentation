@@ -90,34 +90,49 @@ stage('Static Code Analysis') {
     }
   }
 }
-    stage('Build & Push Docker Image') {
-      steps {
-        script {
-          // Build with retry logic
-          def buildSuccess = false
-          def retryCount = 0
-          def maxRetries = 2
+stage('Build & Push Docker Image') {
+  steps {
+    script {
+      // Add retry logic with improved build command
+      def maxRetries = 3
+      def retryCount = 0
+      def buildSuccess = false
+      
+      while (!buildSuccess && retryCount < maxRetries) {
+        try {
+          // Use this build command instead
+          sh """
+            docker build \
+              --build-arg PIP_DEFAULT_TIMEOUT=1000 \
+              --network=host \  # Improves download reliability
+              --no-cache \  # Avoids caching issues
+              -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
+          """
           
-          while (!buildSuccess && retryCount < maxRetries) {
-            try {
-              def image = docker.build("${DOCKER_IMAGE}:${IMAGE_TAG}")
-              docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
-                image.push()
-              }
-              buildSuccess = true
-            } catch (Exception e) {
-              retryCount++
-              echo "Build failed, retrying ($retryCount/$maxRetries)..."
-              sleep(time: 30, unit: 'SECONDS')
-              if (retryCount >= maxRetries) {
-                error("Build failed after $maxRetries attempts")
-              }
-            }
+          buildSuccess = true
+        } catch (Exception e) {
+          retryCount++
+          echo "Build failed (attempt $retryCount/$maxRetries), waiting 30 seconds..."
+          sleep(time: 30, unit: 'SECONDS')
+          
+          // Clean up any partial containers/images
+          sh 'docker system prune -f || true'
+          
+          if (retryCount >= maxRetries) {
+            error("Docker build failed after $maxRetries attempts")
           }
         }
       }
+      
+      // Push only if build succeeded
+      if (buildSuccess) {
+        docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
+          docker.image("${DOCKER_IMAGE}:${IMAGE_TAG}").push()
+        }
+      }
     }
-
+  }
+}
     stage('Update Kubernetes Manifests and Push') {
       steps {
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
