@@ -95,11 +95,10 @@ stage('Build & Push Docker Image') {
     script {
       retry(3) { // Will retry up to 3 times if build fails
         sh """
-          docker build \
-            --no-cache \               
-            --network=host \          
+          --no-cache \
+            --network=host \
             --build-arg SKIP_PYTORCH=1 \
-            -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
+            -t ${DOCKER_IMAGE}:${IMAGE_TAG}
         """
       }
 
