@@ -95,7 +95,7 @@ stage('Build & Push Docker Image') {
     script {
       retry(3) {
         sh """
-        docker build --no-cache --network=host --build-arg SKIP_PYTORCH=1 \
+        docker build --network=host --build-arg SKIP_PYTORCH=1 \
         -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
         """
       }
