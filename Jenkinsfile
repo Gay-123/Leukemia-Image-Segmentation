@@ -93,12 +93,13 @@ stage('Static Code Analysis') {
 stage('Build & Push Docker Image') {
   steps {
     script {
-      retry(3) { // Will retry up to 3 times if build fails
+      retry(3) {
         sh """
-          --no-cache \
+          docker build \
+            --no-cache \
             --network=host \
             --build-arg SKIP_PYTORCH=1 \
-            -t ${DOCKER_IMAGE}:${IMAGE_TAG}
+            -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
         """
       }
 
@@ -112,6 +113,7 @@ stage('Build & Push Docker Image') {
     }
   }
 }
+
     stage('Update Kubernetes Manifests and Push') {
       steps {
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
