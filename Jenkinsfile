@@ -107,9 +107,6 @@ stage('Build & Push Docker Image') {
       docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
         docker.image("${DOCKER_IMAGE}:${IMAGE_TAG}").push()
       }
-
-      // Clean up local image after push (optional)
-      sh "docker rmi ${DOCKER_IMAGE}:${IMAGE_TAG}"
     }
   }
 }
