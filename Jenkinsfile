@@ -90,24 +90,30 @@ stage('Static Code Analysis') {
     }
   }
 }
-stage('Build & Push Docker Image') {
-  steps {
-    script {
-      retry(3) {
-        sh """
-        docker build --network=host --build-arg SKIP_PYTORCH=1 \
-        -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
-        """
-      }
+ stage('Build & Push Docker Image') {
+      steps {
+        script {
+          // Check Docker version and info for debugging
+          sh '''
+            docker --version
+            docker info
+          '''
 
-      // Push with credentials
-      docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
-        docker.image("${DOCKER_IMAGE}:${IMAGE_TAG}").push()
+          // Retry Docker build with specified arguments
+          retry(3) {
+            sh """
+              docker build --network=host --build-arg SKIP_PYTORCH=1 \
+              -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
+            """
+          }
+
+          // Push with credentials
+          docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
+            docker.image("${DOCKER_IMAGE}:${IMAGE_TAG}").push()
+          }
+        }
       }
     }
-  }
-}
-
     stage('Update Kubernetes Manifests and Push') {
       steps {
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
