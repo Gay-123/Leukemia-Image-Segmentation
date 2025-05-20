@@ -95,40 +95,41 @@ pipeline {
         }
       }
     }
-
-    stage('Update K8s Deployment with New Image Tag') {
-      when {
-        expression { fileExists("k8's/deployment.yml") }
-      }
-      steps {
-        script {
-          // Use the same image name and tag from environment variables
-          withCredentials([
-            usernamePassword(
-              credentialsId: 'github-userpass', 
-              usernameVariable: 'GIT_USERNAME',
-              passwordVariable: 'GIT_PASSWORD'
-            )
-          ]) {
-            sh """
-              # Configure Git
-              git config --global user.email "gayathrit726@gmail.com"
-              git config --global user.name "Jenkins CI"
-
-              # Update the Deployment YAML with the new image tag
-              sed -i "s|image: ${DOCKER_IMAGE}:.*|image: ${DOCKER_IMAGE}:${IMAGE_TAG}|g" k8s/deployment.yml
-
-              # Commit and push changes
-              git add k8s/deployment.yml
-              git commit -m "CI: Updated image tag to ${IMAGE_TAG}" || echo "No changes to commit"
-              git push https://${GIT_USER}:${GIT_PASS}@github.com/Gay-123/Leukemia-Image-Segmentation.git HEAD:main
-            """
-          }
-        }
+    
+stage('Update K8s Deployment with New Image Tag') {
+  when {
+    expression { fileExists("k8's/deployment.yml") }
+  }
+  steps {
+    script {
+      // Direct GitHub references (safe because they're just strings)
+      def GITHUB_REPO = "Leukemia-Image-Segmentation"
+      def GITHUB_USER = "Gay-123"
+      
+      withCredentials([
+        usernamePassword(
+          credentialsId: 'github-userpass', 
+          usernameVariable: 'GH_USER',       // Private credential var
+          passwordVariable: 'GH_TOKEN'      // Private credential var
+        )
+      ]) {
+        sh """
+          # Update deployment file
+          sed -i "s|image: ${env.DOCKER_IMAGE}:.*|image: ${env.DOCKER_IMAGE}:${env.IMAGE_TAG}|g" "k8's/deployment.yml"
+          
+          # Configure Git
+          git config --global user.email "gayathrit726@gmail.com"
+          git config --global user.name "Jenkins CI"
+          
+          # Commit and push
+          git add "k8's/deployment.yml"
+          git commit -m "CI: Update to ${env.IMAGE_TAG}" || echo "No changes to commit"
+          git push "https://${GH_USER}:${GH_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git" HEAD:main
+        """
       }
     }
   }
-
+}
   post {
     always {
       cleanWs()
