@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: Leukemia-segmentation-app
-        image: gayathri814/leukemia-segmentation-app:final
+        image: gayathri814/leukemia-segmentation-app:replaceTag
         ports:
         - containerPort: 5000
