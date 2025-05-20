@@ -1,23 +1,27 @@
 pipeline {
   agent {
     docker {
-      image 'gayathri814/leukemia-segmentation:v1'  // YOUR PRE-BUILT IMAGE
-      args '--user root -v /var/run/docker.sock:/var/run/docker.sock --gpus all'  // GPU access
+      image 'gayathri814/leukemia-segmentation:v1'
+      args '--user root -v /var/run/docker.sock:/var/run/docker.sock --gpus all --add-host=host.docker.internal:host-gateway'
     }
   }
 
   environment {
     DOCKER_IMAGE = "gayathri814/leukemia-segmentation"
     IMAGE_TAG = "v${BUILD_NUMBER}"
-    SONAR_URL = "http://localhost:9000"  // UPDATE THIS
+    // Use Docker's special hostname to access host services
+    SONAR_URL = "http://host.docker.internal:9000"
   }
 
   stages {
     stage('Checkout Code') {
       steps {
-        git branch: 'main',
-            url: 'https://github.com/Gay-123/Leukemia-Image-Segmentation.git',
-            credentialsId: 'github'  // ADD YOUR CREDENTIALS ID
+        withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+          sh """
+            git clone https://${GIT_USER}:${GIT_PASS}@github.com/Gay-123/Leukemia-Image-Segmentation.git .
+            git checkout main
+          """
+        }
       }
     }
 
@@ -30,7 +34,8 @@ pipeline {
               -Dsonar.sources=. \
               -Dsonar.host.url=${SONAR_URL} \
               -Dsonar.login=${SONAR_TOKEN} \
-              -Dsonar.python.coverage.reportPaths=coverage.xml
+              -Dsonar.exclusions=static/**,templates/** \
+              -Dsonar.python.version=3.10
           """
         }
       }
@@ -38,45 +43,34 @@ pipeline {
 
     stage('Build & Push Docker Image') {
       steps {
-        script {
-          // Build using the same pre-built image as base
+        withCredentials([usernamePassword(
+          credentialsId: 'docker-cred',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
           sh """
-            docker build \
-              -t ${DOCKER_IMAGE}:${IMAGE_TAG} \
-              -t ${DOCKER_IMAGE}:latest \
-              .
+            docker build -t ${DOCKER_IMAGE}:${IMAGE_TAG} -f Dockerfile .
+            echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+            docker push ${DOCKER_IMAGE}:${IMAGE_TAG}
           """
-          
-          // Push with Docker Hub credentials
-          withCredentials([usernamePassword(
-            credentialsId: 'docker-cred',
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-          )]) {
-            sh """
-              echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
-              docker push ${DOCKER_IMAGE}:${IMAGE_TAG}
-              docker push ${DOCKER_IMAGE}:latest
-            """
-          }
         }
       }
     }
 
     stage('Update K8s Manifests') {
+      when {
+        expression { fileExists('k8s/deployment.yml') }
+      }
       steps {
-        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-          sh '''
+        withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+          sh """
             git config --global user.email "gayathrit726@gmail.com"
             git config --global user.name "Jenkins CI"
-            
-            # Update image tag in deployment
             sed -i "s|image:.*|image: ${DOCKER_IMAGE}:${IMAGE_TAG}|g" k8s/deployment.yml
-            
             git add k8s/deployment.yml
-            git commit -m "CI: Update image to ${IMAGE_TAG}"
-            git push "https://${GITHUB_TOKEN}@github.com/Gay-123/Leukemia-Image-Segmentation.git" HEAD:main
-          '''
+            git commit -m "CI: Update image to ${IMAGE_TAG}" || echo "No changes to commit"
+            git push https://${GIT_USER}:${GIT_PASS}@github.com/Gay-123/Leukemia-Image-Segmentation.git HEAD:main
+          """
         }
       }
     }
@@ -84,13 +78,7 @@ pipeline {
 
   post {
     always {
-      cleanWs()  // Clean workspace
-    }
-    success {
-      slackSend(color: 'good', message: "✅ Pipeline SUCCESS: ${env.BUILD_URL}")
-    }
-    failure {
-      slackSend(color: 'danger', message: "❌ Pipeline FAILED: ${env.BUILD_URL}")
+      cleanWs()
     }
   }
 }
