@@ -1,0 +1,1 @@
+torch==2.0.1+cu117\nflask\nultralytics\nopencv-python\nnumpy\nPillow\ngunicorn
