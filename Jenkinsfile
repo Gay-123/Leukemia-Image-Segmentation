@@ -9,7 +9,7 @@ pipeline {
   environment {
     DOCKER_IMAGE = "gayathri814/leukemia-segmentation"
     IMAGE_TAG = "v${BUILD_NUMBER}"
-    SONAR_URL = "http://your-sonarqube-server:9000"  // UPDATE THIS
+    SONAR_URL = "http://localhost:9000"  // UPDATE THIS
   }
 
   stages {
