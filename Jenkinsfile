@@ -105,7 +105,7 @@ pipeline {
           // Use the same image name and tag from environment variables
           withCredentials([
             usernamePassword(
-              credentialsId: 'github-userpass', ,
+              credentialsId: 'github-userpass', 
               usernameVariable: 'GIT_USER',
               passwordVariable: 'GIT_PASS'
             )
