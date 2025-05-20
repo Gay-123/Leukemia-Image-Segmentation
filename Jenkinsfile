@@ -40,13 +40,13 @@ pipeline {
       steps {
         sh '''
           # Install required tools
-          apk add --no-cache python3 py3-pip git curl unzip
+          apk add --no-cache python3 py3-pip git curl unzip openjdk11-jre
           
-          # Install SonarScanner (correct method for Alpine Linux)
-          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
-          unzip sonar-scanner-cli-4.8.0.2856-linux.zip
-          rm sonar-scanner-cli-4.8.0.2856-linux.zip
-          mv sonar-scanner-4.8.0.2856-linux /opt/sonar-scanner
+          # Install SonarScanner using the official method for Alpine
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856.zip
+          unzip sonar-scanner-cli-4.8.0.2856.zip
+          rm sonar-scanner-cli-4.8.0.2856.zip
+          mv sonar-scanner-4.8.0.2856 /opt/sonar-scanner
           ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
           
           # Verify installations
@@ -60,6 +60,7 @@ pipeline {
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
           sh """
+            export SONAR_SCANNER_OPTS="-Xmx512m"
             sonar-scanner \
               -Dsonar.projectKey=Leukemia-Image-Segmentation \
               -Dsonar.sources=. \
