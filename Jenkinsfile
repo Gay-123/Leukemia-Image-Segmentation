@@ -16,15 +16,12 @@ pipeline {
   stages {
     stage('Checkout Code') {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
-          sh """
-            git clone https://${GIT_USER}:${GIT_PASS}@github.com/Gay-123/Leukemia-Image-Segmentation.git .
-            git checkout main
-          """
-        }
+        git branch: 'main',
+            url: 'https://github.com/Gay-123/Leukemia-Image-Segmentation.git',
+            credentialsId: 'github'  // ADD YOUR CREDENTIALS ID
       }
     }
-
+    
     stage('SonarQube Analysis') {
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
