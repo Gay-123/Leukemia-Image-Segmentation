@@ -106,8 +106,8 @@ pipeline {
           withCredentials([
             usernamePassword(
               credentialsId: 'github-userpass', 
-              usernameVariable: 'GIT_USER',
-              passwordVariable: 'GIT_PASS'
+              usernameVariable: 'GIT_USERNAME',
+              passwordVariable: 'GIT_PASSWORD'
             )
           ]) {
             sh """
