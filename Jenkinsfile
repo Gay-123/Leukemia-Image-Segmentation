@@ -22,22 +22,21 @@ pipeline {
       }
     }
     
-    stage('SonarQube Analysis') {
-      steps {
-        withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
-          sh """
-            sonar-scanner \
-              -Dsonar.projectKey=Leukemia-Image-Segmentation \
-              -Dsonar.sources=. \
-              -Dsonar.host.url=${SONAR_URL} \
-              -Dsonar.login=${SONAR_TOKEN} \
-              -Dsonar.exclusions=static/**,templates/** \
-              -Dsonar.python.version=3.10
-          """
-        }
-      }
+   stage('SonarQube Analysis') {
+  steps {
+    withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
+      sh """
+        sonar-scanner \
+          -Dsonar.projectKey=Leukemia-Image-Segmentation \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=${SONAR_URL} \
+          -Dsonar.login=${SONAR_TOKEN} \
+          -Dsonar.exclusions=static/**,templates/**,models/leukemiaSegmentation.py \
+          -Dsonar.python.version=3.10
+      """
     }
-
+  }
+}
     stage('Build & Push Docker Image') {
       steps {
         withCredentials([usernamePassword(
