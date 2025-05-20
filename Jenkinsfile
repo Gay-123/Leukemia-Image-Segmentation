@@ -17,7 +17,7 @@ pipeline {
       steps {
         git branch: 'main',
             url: 'https://github.com/Gay-123/Leukemia-Image-Segmentation.git',
-            credentialsId: 'github-creds'  // ADD YOUR CREDENTIALS ID
+            credentialsId: 'github'  // ADD YOUR CREDENTIALS ID
       }
     }
 
