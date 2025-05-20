@@ -16,15 +16,23 @@ pipeline {
   stages {
     stage('Checkout Code') {
       steps {
-        checkout([
-          $class: 'GitSCM',
-          branches: [[name: 'main']],
-          extensions: [],
-          userRemoteConfigs: [[
-            url: 'https://github.com/Gay-123/Leukemia-Image-Segmentation.git',
-            credentialsId: 'github'
-          ]]
-        ])
+        script {
+          // First try with credentials, fallback to anonymous if credentials not found
+          try {
+            checkout([
+              $class: 'GitSCM',
+              branches: [[name: 'main']],
+              extensions: [],
+              userRemoteConfigs: [[
+                url: 'https://github.com/Gay-123/Leukemia-Image-Segmentation.git',
+                credentialsId: 'github'
+              ]]
+            ])
+          } catch (Exception e) {
+            echo "Failed to checkout with credentials, trying anonymously"
+            checkout scm
+          }
+        }
       }
     }
 
@@ -32,8 +40,18 @@ pipeline {
       steps {
         sh '''
           # Install required tools
-          apk add --no-cache python3 py3-pip git
-          pip install sonar-scanner
+          apk add --no-cache python3 py3-pip git curl unzip
+          
+          # Install SonarScanner (correct method for Alpine Linux)
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
+          unzip sonar-scanner-cli-4.8.0.2856-linux.zip
+          rm sonar-scanner-cli-4.8.0.2856-linux.zip
+          mv sonar-scanner-4.8.0.2856-linux /opt/sonar-scanner
+          ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
+          
+          # Verify installations
+          docker --version
+          sonar-scanner --version
         '''
       }
     }
@@ -82,26 +100,28 @@ pipeline {
         expression { fileExists('k8s/deployment.yml') }
       }
       steps {
-        withCredentials([
-          usernamePassword(
-            credentialsId: 'github',
-            usernameVariable: 'GIT_USER',
-            passwordVariable: 'GIT_PASS'
-          )
-        ]) {
-          sh """
-            # Configure Git
-            git config --global user.email "gayathrit726@gmail.com"
-            git config --global user.name "Jenkins CI"
-            
-            # Update image tag in deployment
-            sed -i "s|image:.*|image: ${DOCKER_IMAGE}:${IMAGE_TAG}|g" k8s/deployment.yml
-            
-            # Commit and push changes
-            git add k8s/deployment.yml
-            git commit -m "CI: Update image to ${IMAGE_TAG}" || echo "No changes to commit"
-            git push https://${GIT_USER}:${GIT_PASS}@github.com/Gay-123/Leukemia-Image-Segmentation.git HEAD:main
-          """
+        script {
+          withCredentials([
+            usernamePassword(
+              credentialsId: 'github',
+              usernameVariable: 'GIT_USER',
+              passwordVariable: 'GIT_PASS'
+            )
+          ]) {
+            sh """
+              # Configure Git
+              git config --global user.email "gayathrit726@gmail.com"
+              git config --global user.name "Jenkins CI"
+              
+              # Update image tag in deployment
+              sed -i "s|image:.*|image: ${DOCKER_IMAGE}:${IMAGE_TAG}|g" k8s/deployment.yml
+              
+              # Commit and push changes
+              git add k8s/deployment.yml
+              git commit -m "CI: Update image to ${IMAGE_TAG}" || echo "No changes to commit"
+              git push https://${GIT_USER}:${GIT_PASS}@github.com/Gay-123/Leukemia-Image-Segmentation.git HEAD:main
+            """
+          }
         }
       }
     }
