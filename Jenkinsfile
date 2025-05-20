@@ -73,7 +73,7 @@ pipeline {
 
     stage('Update K8s Manifests') {
       steps {
-        withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
           sh '''
             git config --global user.email "gayathrit726@gmail.com"
             git config --global user.name "Jenkins CI"
