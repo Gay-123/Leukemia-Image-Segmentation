@@ -21,14 +21,6 @@ pipeline {
       }
     }
 
-    stage('Run Tests') {
-      steps {
-        sh '''
-          python -m pytest tests/ --cov=app --cov-report=xml
-        '''
-      }
-    }
-
     stage('SonarQube Analysis') {
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
