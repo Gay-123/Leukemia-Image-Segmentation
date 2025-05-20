@@ -98,7 +98,7 @@ pipeline {
 
     stage('Update K8s Deployment with New Image Tag') {
       when {
-        expression { fileExists('k8s/deployment.yml') }
+        expression { fileExists("k8's/deployment.yml") }
       }
       steps {
         script {
