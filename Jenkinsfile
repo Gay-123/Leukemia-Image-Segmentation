@@ -96,44 +96,42 @@ pipeline {
       }
     }
 
-  stage('Update K8s Deployment with New Image Tag') {
-  when {
-    expression { fileExists('k8s/deployment.yml') }
-  }
-  steps {
-    script {
-      // Manually set the new Docker image tag (replace with your actual tag)
-      def DOCKER_IMAGE = "gayathri814/leukemia-segmentation-app"
-      def IMAGE_TAG = "your-new-tag-here"  // e.g., "v1.0.0", "latest", or a Git commit hash
+    stage('Update K8s Deployment with New Image Tag') {
+      when {
+        expression { fileExists('k8s/deployment.yml') }
+      }
+      steps {
+        script {
+          // Use the same image name and tag from environment variables
+          withCredentials([
+            usernamePassword(
+              credentialsId: 'github',
+              usernameVariable: 'GIT_USER',
+              passwordVariable: 'GIT_PASS'
+            )
+          ]) {
+            sh """
+              # Configure Git
+              git config --global user.email "gayathrit726@gmail.com"
+              git config --global user.name "Jenkins CI"
 
-      withCredentials([
-        usernamePassword(
-          credentialsId: 'github',
-          usernameVariable: 'GIT_USER',
-          passwordVariable: 'GIT_PASS'
-        )
-      ]) {
-        sh """
-          # Configure Git
-          git config --global user.email "gayathrit726@gmail.com"
-          git config --global user.name "Jenkins CI"
+              # Update the Deployment YAML with the new image tag
+              sed -i "s|image: ${DOCKER_IMAGE}:.*|image: ${DOCKER_IMAGE}:${IMAGE_TAG}|g" k8s/deployment.yml
 
-          # Update the Deployment YAML with the new image tag
-          sed -i "s|image: ${DOCKER_IMAGE}:.*|image: ${DOCKER_IMAGE}:${IMAGE_TAG}|g" k8s/deployment.yml
-
-          # Commit and push changes
-          git add k8s/deployment.yml
-          git commit -m "CI: Updated image tag to ${IMAGE_TAG}" || echo "No changes to commit"
-          git push https://${GIT_USER}:${GIT_PASS}@github.com/Gay-123/Leukemia-Image-Segmentation.git HEAD:main
-        """
+              # Commit and push changes
+              git add k8s/deployment.yml
+              git commit -m "CI: Updated image tag to ${IMAGE_TAG}" || echo "No changes to commit"
+              git push https://${GIT_USER}:${GIT_PASS}@github.com/Gay-123/Leukemia-Image-Segmentation.git HEAD:main
+            """
+          }
+        }
       }
     }
   }
-}
+
   post {
     always {
       cleanWs()
     }
   }
-}
 }
