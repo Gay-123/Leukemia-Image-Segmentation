@@ -36,12 +36,12 @@ A minimal Flask-based API is integrated to serve the YOLOv8 segmentation model. 
 
 ### How to Run the Flask Web App Locally
 
-# 1️⃣ Clone the repository
+## 1️⃣ Clone the repository
 ```bash
 git clone https://github.com/Gay-123/Leukemia-Image-Segmentation
 cd Leukemia-Image-Segmentation
 ```
-# 2️⃣ Build and run the Flask app
+## 2️⃣ Build and run the Flask app
 ```bash
 docker build -t leukemia-app .
 docker run -p 5000:5000 leukemia-app
@@ -89,7 +89,7 @@ ArgoCD continuously syncs with GitHub. The updated image tag in `deployment.yml`
 ---
 ### **🛠️ Tools Setup**
 
-### **1. Jenkins Setup**
+## **1. Jenkins Setup**
 
 # *To set up Jenkins for the CI/CD pipeline:*
 
@@ -115,7 +115,9 @@ Once unlocked, Jenkins will prompt you to install the recommended plugins. Proce
 In your Jenkins setup, you can create an agent (such as gayathri814/jenkins-agent) to run your Docker image builds as part of the pipeline.
 
 
-### **2. SonarQube Setup**
+
+
+## **2. SonarQube Setup**
 SonarQube is deployed via Docker:
 
 ```bash
@@ -123,11 +125,15 @@ docker run -d --name sonarqube -p 9000:9000 sonarqube
 ```
 You can access it at http://localhost:9000.
 
-### **3. ArgoCD Setup**
+
+
+
+## **3. ArgoCD Setup**
 
 ArgoCD is installed using the [OperatorHub.io](https://operatorhub.io/). Once installed, it continuously syncs with GitHub and automates the deployment to Kubernetes.
 
 ---
+
 ### 🎉 Conclusion
 This project demonstrates an end-to-end pipeline for leukemia cell segmentation using the latest technologies like YOLOv8, Flask, Docker, Jenkins, SonarQube, Kubernetes, and ArgoCD. The integration of CI/CD ensures that the model is continuously tested, built, and deployed with ease, providing a robust solution for real-time leukemia cell detection.
 
