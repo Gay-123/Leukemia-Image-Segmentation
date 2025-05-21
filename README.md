@@ -51,7 +51,8 @@ docker run -p 5000:5000 leukemia-app
 
 ---
 
-🚀 CI/CD Pipeline
+### **🚀 CI/CD Pipeline**
+
 The CI/CD pipeline is the heart of this project, automating everything from code integration to Kubernetes deployment using Jenkins, SonarQube, DockerHub, and ArgoCD.
 
 Pipeline Stages:
