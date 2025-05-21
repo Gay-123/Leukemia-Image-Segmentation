@@ -77,6 +77,9 @@ pipeline {
         }
         
     stage('Update Deployment File') {
+    when {
+                expression { fileExists("k8s/deployment.yml") }
+            }
     environment {
         GIT_REPO_NAME = "Leukemia-Image-Segmentation"
         GIT_USER_NAME = "Gay-123"
