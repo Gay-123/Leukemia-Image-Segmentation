@@ -55,7 +55,8 @@ docker run -p 5000:5000 leukemia-app
 
 The CI/CD pipeline is the heart of this project, automating everything from code integration to Kubernetes deployment using Jenkins, SonarQube, DockerHub, and ArgoCD.
 
-Pipeline Stages:
+##Pipeline Stages:
+
 ✅ Build Trigger
 The pipeline is triggered automatically on every commit to the repository.
 
@@ -79,7 +80,6 @@ ArgoCD continuously syncs with GitHub. The updated image tag in `deployment.yml`
 | Tool           |        Purpose                        |
 | -------------- |---------------------------------------|
 | **Jenkins**    |        CI Automation                  |
-|----------------|---------------------------------------|
 | **Docker**     |        Containerization               |
 | **SonarQube**  |        Code Quality & Static Analysis |
 | **DockerHub**  |        Image Registry                 |
