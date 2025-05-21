@@ -89,9 +89,10 @@ agent {
                     sh 'which git || apk add --no-cache git'
                     
                     // Update the deployment file
-                    sh """
-                        sed -i 's|image: gayathri814/leukemia-segmentation:.*|image: gayathri814/leukemia-segmentation:v${BUILD_NUMBER}|g' k8s/deployment.yml
-                    """
+                   sh """
+    sed -i 's|image: gayathri814/leukemia-segmentation-app:.*|image: gayathri814/leukemia-segmentation-app:v${BUILD_NUMBER}|g' k8s/deployment.yml
+"""
+
                     
                     // Configure git
                     sh """
