@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: Leukemia-segmentation-app-service
+  name: leukemia-segmentation-app-service
 spec:
   type: NodePort
   ports:
@@ -10,4 +10,4 @@ spec:
     targetPort: 8080
     protocol: TCP
   selector:
-    app: Leukemia-segmentation-app
+    app: leukemia-segmentation-app
