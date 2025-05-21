@@ -49,6 +49,7 @@ docker run -p 5000:5000 leukemia-app
 ```
 👉 Now open http://localhost:5000 in your browser.
 
+---
 
 🚀 CI/CD Pipeline
 The CI/CD pipeline is the heart of this project, automating everything from code integration to Kubernetes deployment using Jenkins, SonarQube, DockerHub, and ArgoCD.
