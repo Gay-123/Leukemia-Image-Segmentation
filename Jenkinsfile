@@ -91,10 +91,11 @@ stage('Update Deployment') {
             passwordVariable: 'GITHUB_TOKEN'
         )]) {
             sh '''
-                # Install git in the container (if not present)
-                apk add --no-cache git || apt-get update && apt-get install -y git || yum install -y git
+                # Install git and dependencies
+                apk add --no-cache git
                 
-                # Configure git
+                # Configure git (must be outside the container)
+                git config --global --add safe.directory /var/lib/jenkins/workspace/Leukemia-Segmentation_2
                 git config --global user.email "gayathrit726@gmail.com"
                 git config --global user.name "Gayathri T"
                 
@@ -108,7 +109,8 @@ stage('Update Deployment') {
             '''
         }
     }
-}    post {
+}
+        post {
         always {
             cleanWs()
         }
