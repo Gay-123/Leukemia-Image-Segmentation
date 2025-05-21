@@ -88,7 +88,7 @@ ArgoCD continuously syncs with GitHub. The updated image tag in `deployment.yml`
 
 ---
 ### **🛠️ Tools Setup**
-
+---
 ## **1. Jenkins Setup**
 
 # *To set up Jenkins for the CI/CD pipeline:*
@@ -114,8 +114,7 @@ Once unlocked, Jenkins will prompt you to install the recommended plugins. Proce
 ## **5.Set Up Jenkins Agent:**
 In your Jenkins setup, you can create an agent (such as gayathri814/jenkins-agent) to run your Docker image builds as part of the pipeline.
 
-
-
+---
 
 ## **2. SonarQube Setup**
 SonarQube is deployed via Docker:
@@ -125,8 +124,7 @@ docker run -d --name sonarqube -p 9000:9000 sonarqube
 ```
 You can access it at http://localhost:9000.
 
-
-
+---
 
 ## **3. ArgoCD Setup**
 
