@@ -76,7 +76,7 @@ pipeline {
             }
         }
         
-stage('Update Deployment File') {
+stage('Update Deployment') {
     when {
         expression { fileExists("k8s/deployment.yml") }
     }
@@ -86,22 +86,24 @@ stage('Update Deployment File') {
     }
     steps {
         withCredentials([usernamePassword(
-            credentialsId: 'github_cred',  // MUST match credential ID exactly
+            credentialsId: 'github_cred',
             usernameVariable: 'GIT_USER',
             passwordVariable: 'GITHUB_TOKEN'
         )]) {
             sh '''
-                git config user.email "gayathrit726@gmail.com"
-                git config user.name "Gayathri T"
+                # Install git in the container (if not present)
+                apk add --no-cache git || apt-get update && apt-get install -y git || yum install -y git
                 
-                # Update deployment.yml
-                sed -i "s/replaceTag/${BUILD_NUMBER}/g" k8s/deployment.yml
+                # Configure git
+                git config --global user.email "gayathrit726@gmail.com"
+                git config --global user.name "Gayathri T"
                 
-                # Commit changes
+                # Update deployment file
+                sed -i "s|image: gayathri814/leukemia-segmentation:.*|image: gayathri814/leukemia-segmentation:v${BUILD_NUMBER}|g" k8s/deployment.yml
+                
+                # Commit and push changes
                 git add k8s/deployment.yml
-                git commit -m "Update image to version ${BUILD_NUMBER}" || echo "No changes"
-                
-                # Push using CORRECT credential variables
+                git commit -m "Update image to version ${BUILD_NUMBER}" || echo "No changes to commit"
                 git push https://${GIT_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
             '''
         }
