@@ -39,8 +39,8 @@ A minimal Flask-based API is integrated to serve the YOLOv8 segmentation model. 
 
 ```bash
 # 1️⃣ Clone the repository
-git clone https://github.com/<your-username>/leukemia-segmentation.git
-cd leukemia-segmentation
+git clone https://github.com/Gay-123/Leukemia-Image-Segmentation
+cd Leukemia-Image-Segmentation
 ```
 # 2️⃣ Build and run the Flask app
 ```bash
