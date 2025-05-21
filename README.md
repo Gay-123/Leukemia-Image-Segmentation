@@ -1,8 +1,7 @@
 ## 🧠 Leukemia Cell Segmentation
 
-This project segments leukemia cells from microscopic images using a YOLOv8 model, deployed via a Flask web app. What truly powers this project is the **CI/CD pipeline**, crafted with **Jenkins**, **Docker**, **SonarQube**, **Kubernetes**, and **ArgoCD** for streamlined automation and deployment.
+This project uses a YOLOv8 model to segment leukemia cells from microscopic images. The model is deployed through a Flask web app, allowing users to upload images and receive segmented results. The project also incorporates a CI/CD pipeline with tools like Jenkins, Docker, SonarQube, Kubernetes, and ArgoCD to automate the development and deployment processes.
 
----
 
 ## 🔧 Project Components
 
