@@ -1,4 +1,4 @@
-# 🧠 Leukemia Cell Segmentation
+## 🧠 Leukemia Cell Segmentation
 
 This project segments leukemia cells from microscopic images using a YOLOv8 model, deployed via a Flask web app. What truly powers this project is the **CI/CD pipeline**, crafted with **Jenkins**, **Docker**, **SonarQube**, **Kubernetes**, and **ArgoCD** for streamlined automation and deployment.
 
@@ -86,7 +86,7 @@ ArgoCD continuously syncs with GitHub. The updated image tag in deployment.yml i
 
 
 ---
-🛠️ Tools Setup
+##🛠️ Tools Setup
 1. SonarQube Setup
 SonarQube is deployed via Docker:
 
@@ -95,7 +95,7 @@ docker run -d --name sonarqube -p 9000:9000 sonarqube
 ```
 You can access it at http://localhost:9000.
 
-###ArgoCD Setup
+###2.ArgoCD Setup
 ArgoCD is installed using the [OperatorHub.io](https://operatorhub.io/). Once installed, it continuously syncs with GitHub and automates the deployment to Kubernetes.
 
 ---
