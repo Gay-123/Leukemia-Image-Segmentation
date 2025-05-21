@@ -57,20 +57,20 @@ The CI/CD pipeline is the heart of this project, automating everything from code
 
 ##Pipeline Stages:
 
-✅ Build Trigger
+## **1.✅ Build Trigger**
 The pipeline is triggered automatically on every commit to the repository.
 
-🐳 Docker Image Build
+## **2.🐳 Docker Image Build**
 Jenkins uses a custom agent (gayathri814/jenkins-agent) to build the Docker image using the Dockerfile. The image is tagged as leukemia-app:<BUILD_TAG>.
 
-🔍 Code Quality Check
+## **3.🔍 Code Quality Check**
 SonarQube scans the code for bugs, vulnerabilities, and code smells. Folders like static/, templates/, and .pt files are excluded to reduce noise.
 
-📦 Push to DockerHub
+## **4.📦 Push to DockerHub**
 If the code passes SonarQube’s quality checks, the Docker image is pushed to DockerHub with the tag:
 👉 docker.io/gayathri814/leukemia-app:<BUILD_TAG>
 
-🚀 Kubernetes Deployment (CD)
+## **🚀 Kubernetes Deployment (CD)**
 ArgoCD continuously syncs with GitHub. The updated image tag in `deployment.yml` is picked up and deployed automatically to the Kubernetes cluster.
 
 ---
