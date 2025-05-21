@@ -102,7 +102,6 @@ stage('Update K8s Deployment with New Image Tag') {
   }
   steps {
     script {
-      // Define repo details directly (no credentials needed for public repo)
       def REPO = "Leukemia-Image-Segmentation"
       def USER = "Gay-123"
       
