@@ -102,23 +102,24 @@ stage('Update K8s Deployment with New Image Tag') {
   }
   steps {
     script {
-      def GITHUB_REPO = "Leukemia-Image-Segmentation"
-      def GITHUB_USER = "Gay-123"
+      // Define repo details directly (no credentials needed for public repo)
+      def REPO = "Leukemia-Image-Segmentation"
+      def USER = "Gay-123"
       
       sh """
         # Update deployment file
         sed -i "s|image: ${env.DOCKER_IMAGE}:.*|image: ${env.DOCKER_IMAGE}:${env.IMAGE_TAG}|g" "k8's/deployment.yml"
         
-        # Configure Git (email/name still needed for commits)
+        # Configure Git
         git config --global user.email "gayathrit726@gmail.com"
         git config --global user.name "Jenkins CI"
         
-        # Commit changes (but skip push if auth fails)
+        # Commit changes
         git add "k8's/deployment.yml"
         git commit -m "CI: Update to ${env.IMAGE_TAG}" || echo "No changes to commit"
         
-        # Attempt push (will fail if repo is private/protected)
-        git push "https://github.com/${GITHUB_USER}/${GITHUB_REPO}.git" HEAD:main || echo "Push failed (auth required?)"
+        # Push changes (will fail if repo is private/protected)
+        git push "https://github.com/${USER}/${REPO}.git" HEAD:main || echo "Push skipped (auth may be required)"
       """
     }
   }
