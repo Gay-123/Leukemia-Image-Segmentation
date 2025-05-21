@@ -85,28 +85,29 @@ stage('Update Deployment') {
         GIT_USER_NAME = "Gay-123"
     }
     steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'github_cred',
-            usernameVariable: 'GIT_USER',
-            passwordVariable: 'GITHUB_TOKEN'
-        )]) {
-            sh '''
-                # Install git and dependencies
-                apk add --no-cache git
+        script {
+            withCredentials([usernamePassword(
+                credentialsId: 'github_cred',
+                usernameVariable: 'GIT_USER',
+                passwordVariable: 'GITHUB_TOKEN'
+            )]) {
+                // First update the deployment file from host machine
+                sh """
+                    sed -i 's|image: gayathri814/leukemia-segmentation:.*|image: gayathri814/leukemia-segmentation:v${BUILD_NUMBER}|g' k8s/deployment.yml
+                """
                 
-                # Configure git (must be outside the container)
-                git config --global --add safe.directory /var/lib/jenkins/workspace/Leukemia-Segmentation_2
-                git config --global user.email "gayathrit726@gmail.com"
-                git config --global user.name "Gayathri T"
-                
-                # Update deployment file
-                sed -i "s|image: gayathri814/leukemia-segmentation:.*|image: gayathri814/leukemia-segmentation:v${BUILD_NUMBER}|g" k8s/deployment.yml
-                
-                # Commit and push changes
-                git add k8s/deployment.yml
-                git commit -m "Update image to version ${BUILD_NUMBER}" || echo "No changes to commit"
-                git push https://${GIT_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
-            '''
+                // Then run git commands from host machine (not inside docker)
+                dir(env.WORKSPACE) {
+                    sh """
+                        git config --global --add safe.directory ${env.WORKSPACE}
+                        git config user.email "gayathrit726@gmail.com"
+                        git config user.name "Gayathri T"
+                        git add k8s/deployment.yml
+                        git commit -m "Update image to version ${BUILD_NUMBER}" || echo "No changes to commit"
+                        git push https://${GIT_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
+                    """
+                }
+            }
         }
     }
 }
