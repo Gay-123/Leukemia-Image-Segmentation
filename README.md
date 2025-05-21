@@ -69,20 +69,22 @@ SonarQube scans the code for bugs, vulnerabilities, and code smells. Folders lik
 If the code passes SonarQube’s quality checks, the Docker image is pushed to DockerHub with the tag:
 👉 docker.io/gayathri814/leukemia-app:<BUILD_TAG>
 
-Kubernetes Deployment (CD)
-ArgoCD continuously syncs with GitHub. The updated image tag in deployment.yml is picked up and deployed automatically to the Kubernetes cluster.
+🚀 Kubernetes Deployment (CD)
+ArgoCD continuously syncs with GitHub. The updated image tag in `deployment.yml` is picked up and deployed automatically to the Kubernetes cluster.
+
 ---
 
 ✅ Tools Used
 
-| Tool           | Purpose                        |
-| -------------- | ------------------------------ |
-| **Jenkins**    | CI Automation                  |
-| **Docker**     | Containerization               |
-| **SonarQube**  | Code Quality & Static Analysis |
-| **DockerHub**  | Image Registry                 |
-| **ArgoCD**     | GitOps Continuous Delivery     |
-| **Kubernetes** | App Deployment and Scaling     |
+| Tool           |        Purpose                        |
+| -------------- |---------------------------------------|
+| **Jenkins**    |        CI Automation                  |
+|----------------|---------------------------------------|
+| **Docker**     |        Containerization               |
+| **SonarQube**  |        Code Quality & Static Analysis |
+| **DockerHub**  |        Image Registry                 |
+| **ArgoCD**     |        GitOps Continuous Delivery     |
+| **Kubernetes** |        App Deployment and Scaling     |
 
 
 ---
