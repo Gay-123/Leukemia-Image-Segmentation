@@ -1,11 +1,12 @@
 pipeline {
     agent {
-    docker {
-        image 'docker:20.10.24-cli' 
-        args '--privileged --user root -v /var/run/docker.sock:/var/run/docker.sock --gpus all --add-host=host.docker.internal:host-gateway -e DOCKER_TLS_CERTDIR=""'
-        reuseNode true
+        docker {
+            image 'docker:20.10-dind' 
+            args '--privileged --entrypoint= --user root -v /var/run/docker.sock:/var/run/docker.sock --gpus all --add-host=host.docker.internal:host-gateway -e DOCKER_TLS_CERTDIR=""'
+            reuseNode true
+        }
     }
-}
+
     environment {
         DOCKER_IMAGE = "gayathri814/leukemia-segmentation"
         IMAGE_TAG = "v${BUILD_NUMBER}"
@@ -75,81 +76,49 @@ pipeline {
             }
         }
         
-stage('Update Deployment') {
-    when {
-        expression { fileExists("k8s/deployment.yml") }
-    }
-    environment {
-        GIT_REPO_NAME = "Leukemia-Image-Segmentation"
-        GIT_USER_NAME = "Gay-123"
-    }
-    steps {
-        script {
-            // First update the deployment file inside the container
-            sh """
-                sed -i 's|image: gayathri814/leukemia-segmentation:.*|image: gayathri814/leukemia-segmentation:v${BUILD_NUMBER}|g' k8s/deployment.yml
-            """
-            
-            // Then run git commands on the host machine
-            withCredentials([usernamePassword(
-                credentialsId: 'github_cred',
-                usernameVariable: 'GIT_USER',
-                passwordVariable: 'GITHUB_TOKEN'
-            )]) {
-                docker.image('alpine/git').inside('--entrypoint=') {
+        stage('Update Deployment') {
+            when {
+                expression { fileExists("k8s/deployment.yml") }
+            }
+            environment {
+                GIT_REPO_NAME = "Leukemia-Image-Segmentation"
+                GIT_USER_NAME = "Gay-123"
+            }
+            steps {
+                script {
+                    // First ensure git is available
+                    sh 'which git || apk add --no-cache git'
+                    
+                    // Update the deployment file
+                    sh """
+                        sed -i 's|image: gayathri814/leukemia-segmentation:.*|image: gayathri814/leukemia-segmentation:v${BUILD_NUMBER}|g' k8s/deployment.yml
+                    """
+                    
+                    // Configure git
                     sh """
                         git config --global --add safe.directory ${env.WORKSPACE}
                         git config --global user.email "gayathrit726@gmail.com"
                         git config --global user.name "Gayathri T"
-                        git add k8s/deployment.yml
-                        git commit -m "Update image to version ${BUILD_NUMBER}" || echo "No changes to commit"
-                        git push https://${GIT_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
                     """
+                    
+                    // Commit and push changes
+                    withCredentials([usernamePassword(
+                        credentialsId: 'github_cred',
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GITHUB_TOKEN'
+                    )]) {
+                        sh """
+                            git add k8s/deployment.yml
+                            git commit -m "Update image to version ${BUILD_NUMBER}" || echo "No changes to commit"
+                            git push https://${GIT_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
+                        """
+                    }
                 }
             }
         }
     }
-}
-        
-stage('Update Deployment') {
-    when {
-        expression { fileExists("k8s/deployment.yml") }
-    }
-    environment {
-        GIT_REPO_NAME = "Leukemia-Image-Segmentation"
-        GIT_USER_NAME = "Gay-123"
-    }
-    steps {
-        script {
-            // Update the deployment file
-            sh """
-                sed -i 's|image: gayathri814/leukemia-segmentation:.*|image: gayathri814/leukemia-segmentation:v${BUILD_NUMBER}|g' k8s/deployment.yml
-            """
-            
-            // Install git in the current container
-            sh """
-                apk add --no-cache git
-                git config --global --add safe.directory ${env.WORKSPACE}
-                git config --global user.email "gayathrit726@gmail.com"
-                git config --global user.name "Gayathri T"
-            """
-            
-            // Commit and push changes
-            withCredentials([usernamePassword(
-                credentialsId: 'github_cred',
-                usernameVariable: 'GIT_USER',
-                passwordVariable: 'GITHUB_TOKEN'
-            )]) {
-                sh """
-                    git add k8s/deployment.yml
-                    git commit -m "Update image to version ${BUILD_NUMBER}" || echo "No changes to commit"
-                    git push https://${GIT_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
-                """
-            }
-        }
-    }
-}
-        post {
+    
+    post {
         always {
             cleanWs()
         }
