@@ -109,7 +109,9 @@ stage('Update Deployment') {
             }
         }
     }
-}stage('Update Deployment') {
+}
+        
+stage('Update Deployment') {
     when {
         expression { fileExists("k8s/deployment.yml") }
     }
@@ -119,27 +121,30 @@ stage('Update Deployment') {
     }
     steps {
         script {
-            // First update the deployment file inside the container
+            // Update the deployment file
             sh """
                 sed -i 's|image: gayathri814/leukemia-segmentation:.*|image: gayathri814/leukemia-segmentation:v${BUILD_NUMBER}|g' k8s/deployment.yml
             """
             
-            // Then run git commands on the host machine
+            // Install git in the current container
+            sh """
+                apk add --no-cache git
+                git config --global --add safe.directory ${env.WORKSPACE}
+                git config --global user.email "gayathrit726@gmail.com"
+                git config --global user.name "Gayathri T"
+            """
+            
+            // Commit and push changes
             withCredentials([usernamePassword(
                 credentialsId: 'github_cred',
                 usernameVariable: 'GIT_USER',
                 passwordVariable: 'GITHUB_TOKEN'
             )]) {
-                docker.image('alpine/git').inside('--entrypoint=') {
-                    sh """
-                        git config --global --add safe.directory ${env.WORKSPACE}
-                        git config --global user.email "gayathrit726@gmail.com"
-                        git config --global user.name "Gayathri T"
-                        git add k8s/deployment.yml
-                        git commit -m "Update image to version ${BUILD_NUMBER}" || echo "No changes to commit"
-                        git push https://${GIT_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
-                    """
-                }
+                sh """
+                    git add k8s/deployment.yml
+                    git commit -m "Update image to version ${BUILD_NUMBER}" || echo "No changes to commit"
+                    git push https://${GIT_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
+                """
             }
         }
     }
