@@ -78,7 +78,7 @@ pipeline {
         
     stage('Update Deployment File') {
     when {
-                expression { fileExists("k8s/deployment.yml") }
+                expression { fileExists("k8's/deployment.yml") }
             }
     environment {
         GIT_REPO_NAME = "Leukemia-Image-Segmentation"
@@ -91,7 +91,7 @@ pipeline {
                 git config user.name "Gayathri T"
 
                 # Replace placeholder in k8s/deployment.yml with current build number
-                sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" k8s/deployment.yml
+                sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" k8's/deployment.yml
 
                 git add k8s/deployment.yml
                 git commit -m "Update deployment image to version ${BUILD_NUMBER}" || echo "No changes to commit"
