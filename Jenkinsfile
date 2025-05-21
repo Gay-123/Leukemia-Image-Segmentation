@@ -76,31 +76,30 @@ pipeline {
             }
         }
         
-    stage('Update Deployment File') {
+stage('Update Deployment File') {
     when {
-                expression { fileExists("k8's/deployment.yml") }
-            }
+        expression { fileExists("k8s/deployment.yml") }  // Fixed folder name (no single quote)
+    }
     environment {
         GIT_REPO_NAME = "Leukemia-Image-Segmentation"
         GIT_USER_NAME = "Gay-123"
     }
     steps {
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-            sh '''
+            sh """
                 git config user.email "gayathrit726@gmail.com"
-                git config user.name "Gayathri T"
+                git config user.name "Gay-123"
 
                 # Replace placeholder in k8s/deployment.yml with current build number
-                sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" k8's/deployment.yml
+                sed -i 's/replaceTag/${BUILD_NUMBER}/g' k8s/deployment.yml
 
                 git add k8s/deployment.yml
                 git commit -m "Update deployment image to version ${BUILD_NUMBER}" || echo "No changes to commit"
                 git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
-            '''
+            """
         }
     }
 }
-
     post {
         always {
             cleanWs()
