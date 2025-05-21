@@ -1,7 +1,7 @@
 pipeline {
     agent {
     docker {
-        image 'docker:20.10.24-git' 
+        image 'docker:20.10.24-cli' 
         args '--privileged --user root -v /var/run/docker.sock:/var/run/docker.sock --gpus all --add-host=host.docker.internal:host-gateway -e DOCKER_TLS_CERTDIR=""'
         reuseNode true
     }
