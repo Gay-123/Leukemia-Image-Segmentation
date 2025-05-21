@@ -86,22 +86,27 @@ stage('Update Deployment File') {
     }
     steps {
         withCredentials([usernamePassword(
-            credentialsId: 'github_cred',  // Updated to match your credential ID
-            usernameVariable: 'GIT_USERNAME',
+            credentialsId: 'github_cred',  // MUST match credential ID exactly
+            usernameVariable: 'GIT_USER',
             passwordVariable: 'GITHUB_TOKEN'
         )]) {
             sh '''
                 git config user.email "gayathrit726@gmail.com"
                 git config user.name "Gayathri T"
+                
+                # Update deployment.yml
                 sed -i "s/replaceTag/${BUILD_NUMBER}/g" k8s/deployment.yml
+                
+                # Commit changes
                 git add k8s/deployment.yml
-                git commit -m "Update deployment image to version ${BUILD_NUMBER}" || echo "No changes to commit"
-                git push https://${GIT_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
+                git commit -m "Update image to version ${BUILD_NUMBER}" || echo "No changes"
+                
+                # Push using CORRECT credential variables
+                git push https://${GIT_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
             '''
         }
     }
-}
-    post {
+}    post {
         always {
             cleanWs()
         }
