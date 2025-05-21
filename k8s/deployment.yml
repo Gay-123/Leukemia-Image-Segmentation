@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: Leukemia-segmentation-app
+  name: leukemia-segmentation-app
   labels:
-    app: Leukemia-segmentation-app
+    app: leukemia-segmentation-app
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
-      app: Leukemia-segmentation-app
+      app: leukemia-segmentation-app
   template:
     metadata:
       labels:
-        app: Leukemia-segmentation-app
+        app: leukemia-segmentation-app
     spec:
       containers:
-      - name: Leukemia-segmentation-app
+      - name: leukemia-segmentation-app
         image: gayathri814/leukemia-segmentation-app:v42
         ports:
         - containerPort: 5000
