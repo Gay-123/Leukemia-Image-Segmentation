@@ -27,7 +27,7 @@ The dataset used for training the YOLOv8 model consists of microscopic images of
 
 ---
 
-## 🌐 Flask API for Model Inference
+## 🌐 Flask API for Web App
 
 A minimal Flask-based API is integrated to serve the YOLOv8 segmentation model. Users can clone the repository and run the app locally to perform inference on leukemia cell images.
 
@@ -70,7 +70,7 @@ SonarQube scans the code for bugs, vulnerabilities, and code smells. Folders lik
 If the code passes SonarQube’s quality checks, the Docker image is pushed to DockerHub with the tag:
 👉 docker.io/gayathri814/leukemia-app:<BUILD_TAG>
 
-## **🚀 Kubernetes Deployment (CD)**
+## **5.🚀 Kubernetes Deployment (CD)**
 ArgoCD continuously syncs with GitHub. The updated image tag in `deployment.yml` is picked up and deployed automatically to the Kubernetes cluster.
 
 ---
