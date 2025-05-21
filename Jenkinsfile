@@ -1,11 +1,10 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:20.10-dind' 
-            args '--privileged --entrypoint= --user root -v /var/run/docker.sock:/var/run/docker.sock --gpus all --add-host=host.docker.internal:host-gateway -e DOCKER_TLS_CERTDIR=""'
-            reuseNode true
-        }
+agent {
+    docker {
+        image 'gayathri814/jenkins-agent:latest'
+        args '--privileged --user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
+}
 
     environment {
         DOCKER_IMAGE = "gayathri814/leukemia-segmentation"
