@@ -17,5 +17,6 @@ spec:
       containers:
       - name: leukemia-segmentation-app
         image: gayathri814/leukemia-segmentation-app:v42
+        imagePullPolicy: always
         ports:
         - containerPort: 5000
