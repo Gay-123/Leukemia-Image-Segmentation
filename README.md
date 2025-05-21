@@ -27,7 +27,7 @@ The dataset used for training the YOLOv8 model consists of microscopic images of
 
 ---
 
-## 🌐 Flask API for Web App
+## 🌐 Flask API for Model Inference
 
 A minimal Flask-based API is integrated to serve the YOLOv8 segmentation model. Users can clone the repository and run the app locally to perform inference on leukemia cell images.
 
