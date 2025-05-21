@@ -89,7 +89,33 @@ ArgoCD continuously syncs with GitHub. The updated image tag in `deployment.yml`
 ---
 ### **🛠️ Tools Setup**
 
-### **1. SonarQube Setup**
+### **1. Jenkins Setup**
+
+# *To set up Jenkins for the CI/CD pipeline:*
+
+# *1.Install Jenkins:*
+If Jenkins is not installed yet, you can run it via Docker:
+
+```bash
+docker run -d --name jenkins -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts
+```
+# *2.Access Jenkins:*
+After running the above command, Jenkins will be accessible at http://localhost:8080.
+
+# *3.Unlock Jenkins:*
+On the first access, Jenkins will ask for an unlock key. Get the key by running the following command:
+
+```bash
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+# *4.Install Suggested Plugins:*
+Once unlocked, Jenkins will prompt you to install the recommended plugins. Proceed with that option.
+
+# *5.Set Up Jenkins Agent:*
+In your Jenkins setup, you can create an agent (such as gayathri814/jenkins-agent) to run your Docker image builds as part of the pipeline.
+
+
+### **2. SonarQube Setup**
 SonarQube is deployed via Docker:
 
 ```bash
@@ -97,7 +123,7 @@ docker run -d --name sonarqube -p 9000:9000 sonarqube
 ```
 You can access it at http://localhost:9000.
 
-### **2. ArgoCD Setup**
+### **3. ArgoCD Setup**
 
 ArgoCD is installed using the [OperatorHub.io](https://operatorhub.io/). Once installed, it continuously syncs with GitHub and automates the deployment to Kubernetes.
 
