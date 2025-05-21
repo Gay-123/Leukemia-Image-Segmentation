@@ -41,12 +41,14 @@ A minimal Flask-based API is integrated to serve the YOLOv8 segmentation model. 
 # 1️⃣ Clone the repository
 git clone https://github.com/<your-username>/leukemia-segmentation.git
 cd leukemia-segmentation
-
+```
 # 2️⃣ Build and run the Flask app
+```bash
 docker build -t leukemia-app .
 docker run -p 5000:5000 leukemia-app
 ```
 👉 Now open http://localhost:5000 in your browser.
+
 
 🚀 CI/CD Pipeline
 The CI/CD pipeline is the heart of this project, automating everything from code integration to Kubernetes deployment using Jenkins, SonarQube, DockerHub, and ArgoCD.
@@ -70,27 +72,30 @@ ArgoCD continuously syncs with GitHub. The updated image tag in deployment.yml i
 ---
 
 ✅ Tools Used
-Tool	Purpose
-Jenkins	CI Automation
-Docker	Containerization
-SonarQube	Code Quality & Static Analysis
-DockerHub	Image Registry
-ArgoCD	GitOps Continuous Delivery
-Kubernetes	App Deployment and Scaling
+
+| Tool           | Purpose                        |
+| -------------- | ------------------------------ |
+| **Jenkins**    | CI Automation                  |
+| **Docker**     | Containerization               |
+| **SonarQube**  | Code Quality & Static Analysis |
+| **DockerHub**  | Image Registry                 |
+| **ArgoCD**     | GitOps Continuous Delivery     |
+| **Kubernetes** | App Deployment and Scaling     |
+
 
 ---
 🛠️ Tools Setup
 1. SonarQube Setup
 SonarQube is deployed via Docker:
 
-bash
-Copy
-Edit
+```bash
 docker run -d --name sonarqube -p 9000:9000 sonarqube
+```
 You can access it at http://localhost:9000.
 
-2. ArgoCD Setup
-ArgoCD is installed using the OperatorHub.io. Once installed, it continuously syncs with GitHub and automates the deployment to Kubernetes.
+###ArgoCD Setup
+ArgoCD is installed using the [OperatorHub.io](https://operatorhub.io/). Once installed, it continuously syncs with GitHub and automates the deployment to Kubernetes.
+
 ---
 📝 License
 This project is licensed under the MIT License. See the LICENSE file for more details.
