@@ -23,7 +23,7 @@ The dataset used for training the YOLOv8 model consists of microscopic images of
 - 🔗 **[View Dataset on Roboflow](https://universe.roboflow.com/suman-computer-vision/leukemia-riajh/dataset/1)**
 - 🧾 **License**: CC BY 4.0
 - 📦 **Classes**: 1 (cell)
-- 🔢 **Number of Images**: [Add number of images]
+- 🔢 **Number of Images**: 506
 
 ---
 
