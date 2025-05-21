@@ -88,8 +88,9 @@ ArgoCD continuously syncs with GitHub. The updated image tag in `deployment.yml`
 
 
 ---
-##🛠️ Tools Setup
-1. SonarQube Setup
+#🛠️ Tools Setup
+
+#1. SonarQube Setup
 SonarQube is deployed via Docker:
 
 ```bash
@@ -97,12 +98,13 @@ docker run -d --name sonarqube -p 9000:9000 sonarqube
 ```
 You can access it at http://localhost:9000.
 
-###2.ArgoCD Setup
+#2. ArgoCD Setup
+
 ArgoCD is installed using the [OperatorHub.io](https://operatorhub.io/). Once installed, it continuously syncs with GitHub and automates the deployment to Kubernetes.
 
 ---
-📝 License
-This project is licensed under the MIT License. See the LICENSE file for more details.
+### 🎉 Conclusion
+This project demonstrates an end-to-end pipeline for leukemia cell segmentation using the latest technologies like YOLOv8, Flask, Docker, Jenkins, SonarQube, Kubernetes, and ArgoCD. The integration of CI/CD ensures that the model is continuously tested, built, and deployed with ease, providing a robust solution for real-time leukemia cell detection.
 
 ---
 
